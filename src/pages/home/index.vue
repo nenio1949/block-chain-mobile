@@ -1,7 +1,7 @@
 <template>
   <div class="home-container" :style="{ 'padding-bottom': tabActive === 0 ? '260px' : '0px' }">
     <div class="header-box">
-      <img src="https://www.tronlink.org/home/images/logo.png" />
+      <img src="@/assets/img/logo.png" />
     </div>
 
     <div class="tab-box">
