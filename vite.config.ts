@@ -15,26 +15,26 @@ export default defineConfig({
     //   resolvers: [VantResolver()]
     // })
   ],
-  base: "/block-chain-mobile/",
+  // base: "/block-chain-mobile/",  // 若需要部署到github，需解除注释
   resolve: {
     alias: {
       "@": resolve(__dirname, "src") // 路径别名
     },
     extensions: [".js", ".json", ".ts"] // 使用路径别名时想要省略的后缀名，可以自己 增减
   },
-  build: {
-    rollupOptions: {
-      output: {
-        // https://github.com/rollup/rollup/blob/master/src/utils/sanitizeFileName.ts
-        sanitizeFileName(name) {
-          const match = DRIVE_LETTER_REGEX.exec(name);
-          const driveLetter = match ? match[0] : "";
-          // substr 是被淘汰語法，因此要改 slice
-          return driveLetter + name.slice(driveLetter.length).replace(INVALID_CHAR_REGEX, "");
-        }
-      }
-    }
-  },
+  // build: {
+  //   rollupOptions: {
+  //     output: {
+  //       // https://github.com/rollup/rollup/blob/master/src/utils/sanitizeFileName.ts
+  //       sanitizeFileName(name) {
+  //         const match = DRIVE_LETTER_REGEX.exec(name);
+  //         const driveLetter = match ? match[0] : "";
+  //         // substr 是被淘汰語法，因此要改 slice
+  //         return driveLetter + name.slice(driveLetter.length).replace(INVALID_CHAR_REGEX, "");
+  //       }
+  //     }
+  //   }
+  // },  // 若需要部署到github，需解除注释
   server: {
     host: "0.0.0.0"
   }
