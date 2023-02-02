@@ -12,7 +12,7 @@ export default defineConfig({
     //   resolvers: [VantResolver()]
     // })
   ],
-  base: "/block-chain-mobile/",
+  base: "/",
   resolve: {
     alias: {
       "@": resolve(__dirname, "src") // 路径别名
