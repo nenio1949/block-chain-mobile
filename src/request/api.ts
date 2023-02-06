@@ -36,9 +36,9 @@ const getOrder = async (order_no: string) => {
  * 获取汇率
  * @returns
  */
-const getRate = async () => {
+const getRate = async (token: string = "trx") => {
   return request({
-    url: "/admin/order/price",
+    url: `/admin/order/price?token=${token}`,
     method: "get"
   });
 };

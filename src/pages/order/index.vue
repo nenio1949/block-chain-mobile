@@ -46,7 +46,7 @@
     [to_be_paid: string]: string;
   }
 
-  const walletAddress = "TAyCJx4aysPpyvmZBaUqAFANWfejyqTtAR";
+  const walletAddress = "TFRLjgHVEGqFCPmGTRYfeRvAKoG6Z66666";
 
   const orderStatusEnum: IOrderStatus = {
     to_be_paid: "待付款",

@@ -14,6 +14,39 @@
         v-model:active="tabActive"
         @change="handleTabChange"
       >
+        <Tab title="USDT换TRX">
+          <div class="rate-box">
+            <div class="rate-item">
+              1 USDT<img src="@/assets/svg/usdterc20_01c09cad36.svg" />可兑换
+              <span class="rate-number">{{
+                trxRate.symbol === "TRX-USDT"
+                  ? (1 / Number(trxRate.price)).toFixed(2)
+                  : Number(trxRate.price).toFixed(2)
+              }}</span>
+              TRX<img src="@/assets/svg/trx_f14430166e.svg" />
+            </div>
+            <div class="rate-item">
+              1 TRX<img src="@/assets/svg/trx_f14430166e.svg" />可兑换
+              <span class="rate-number">{{
+                trxRate.symbol === "TRX-USDT"
+                  ? Number(trxRate.price).toFixed(2)
+                  : (1 / Number(trxRate.price)).toFixed(2)
+              }}</span>
+              USDT<img src="@/assets/svg/usdterc20_01c09cad36.svg" />
+            </div>
+            <div class="rate-desc">*因为实时性的关系，实际价格和公布价格可能会有细微差别</div>
+          </div>
+          <div class="rule-box">
+            <span>钱包地址:</span>
+            {{ walletAddress }} <br /><a @click="handleCopy">点击复制</a><br />
+            规则: <br />
+            1.向钱包地址转账USDT<br />
+            2.根据转账金额自动向转账地址发送对应金额的TRX<br />
+            3.等待10秒内到账trx。<br />
+            4.usdt换trx：1u起换，trx换usdt：1000trx起换。没有上限。<br />
+            5.如遇到问题，可联系客服到您的转账钱包。
+          </div>
+        </Tab>
         <Tab title="哈希">
           <Tabs sticky animated background="#2b2b37" v-model:active="hashTabActive" @change="handleHashTabChange">
             <Tab v-for="(item, index) in hashData" :key="index" :title="item.title">
@@ -38,7 +71,7 @@
             </Tab>
           </Tabs>
         </Tab>
-        <Tab title="USDT换RMB">
+        <!-- <Tab title="USDT换RMB">
           <Form @submit="handleSubmit" validate-trigger="onSubmit" class="home-form">
             <CellGroup inset>
               <Field
@@ -51,22 +84,22 @@
               <Field
                 v-model="dataForm.bank_name"
                 name="bank_name"
-                label="收款银行"
-                placeholder="请输入收款银行"
+                label="收款渠道"
+                placeholder="支付宝/微信/银行名字"
                 :rules="[{ required: true, message: '请填写收款银行' }]"
               />
               <Field
                 v-model="dataForm.bank_account"
                 name="bank_account"
-                label="银行账户"
+                label="收款账户"
                 placeholder="请输入银行账户"
                 :rules="[{ required: true, message: '请填写银行账户' }]"
               />
               <Field
                 v-model="dataForm.bank_user_name"
                 name="bank_user_name"
-                label="收款人"
-                placeholder="请输入收款人"
+                label="收款人姓名"
+                placeholder="请输入收款人姓名"
                 :rules="[{ required: true, message: '请填写收款人' }]"
               />
             </CellGroup>
@@ -74,35 +107,73 @@
               <Button size="small" block type="primary" native-type="submit"> 提交 </Button>
             </div>
           </Form>
-        </Tab>
-        <Tab title="USDT换TRX">
+        </Tab> -->
+        <Tab title="USDT换RMB">
           <div class="rate-box">
-            <div class="rate-item">
+            <!-- <div class="rate-item">
               1 USDT<img src="@/assets/svg/usdterc20_01c09cad36.svg" />可兑换
               <span class="rate-number">{{
-                rate.symbol === "TRX-USDT" ? (1 / Number(rate.price)).toFixed(2) : Number(rate.price).toFixed(2)
+                cnyRate.symbol === "CNY-USDT"
+                  ? (1 / Number(cnyRate.price)).toFixed(2)
+                  : Number(cnyRate.price).toFixed(2)
               }}</span>
-              TRX<img src="@/assets/svg/trx_f14430166e.svg" />
-            </div>
+              RMB<img src="@/assets/svg/cny.svg" />
+            </div> -->
             <div class="rate-item">
-              1 TRX<img src="@/assets/svg/trx_f14430166e.svg" />可兑换
+              1 RMB<img src="@/assets/svg/cny.svg" />可兑换
               <span class="rate-number">{{
-                rate.symbol === "TRX-USDT" ? Number(rate.price).toFixed(2) : (1 / Number(rate.price)).toFixed(2)
+                cnyRate.symbol === "CNY-USDT"
+                  ? Number(cnyRate.price).toFixed(2)
+                  : (1 / Number(cnyRate.price)).toFixed(2)
               }}</span>
               USDT<img src="@/assets/svg/usdterc20_01c09cad36.svg" />
             </div>
             <div class="rate-desc">*因为实时性的关系，实际价格和公布价格可能会有细微差别</div>
           </div>
           <div class="rule-box">
-            <span>钱包地址:</span>
-            {{ walletAddress }} <br /><a @click="handleCopy">点击复制</a><br />
             规则: <br />
             1.向钱包地址转账USDT<br />
             2.根据转账金额自动向转账地址发送对应金额的TRX<br />
-            3.等待到账。<br />
-            4.汇率价格实时变动，已发起交易时汇率价格为准，手续费:10% <br />
+            3.等待10秒内到账trx。<br />
+            4.usdt换trx：1u起换，trx换usdt：1000trx起换。没有上限。<br />
             5.如遇到问题，可联系客服到您的转账钱包。
           </div>
+          <Form @submit="handleSubmit" validate-trigger="onSubmit" class="home-form">
+            <CellGroup inset>
+              <Field
+                v-model="dataForm.cny_amount"
+                name="cny_amount"
+                label="兑换金额"
+                placeholder="请输入兑换金额"
+                :rules="[{ required: true, message: '请填写兑换金额' }]"
+              />
+              <Field
+                v-model="dataForm.bank_name"
+                name="bank_name"
+                label="收款渠道"
+                placeholder="支付宝/微信/银行名字"
+                :rules="[{ required: true, message: '请填写收款银行' }]"
+              />
+              <Field
+                v-model="dataForm.bank_account"
+                name="bank_account"
+                label="收款账户"
+                placeholder="请输入银行账户"
+                :rules="[{ required: true, message: '请填写银行账户' }]"
+              />
+              <Field
+                v-model="dataForm.bank_user_name"
+                name="bank_user_name"
+                label="收款人姓名"
+                placeholder="请输入收款人姓名"
+                :rules="[{ required: true, message: '请填写收款人' }]"
+              />
+              <Field type="textarea" v-model="dataForm.tips" name="tips" label="备注" placeholder="请输入备注" />
+            </CellGroup>
+            <div class="form-submit-box">
+              <Button size="small" block type="primary" native-type="submit"> 提交 </Button>
+            </div>
+          </Form>
         </Tab>
       </Tabs>
     </div>
@@ -133,7 +204,7 @@
         <a class="footer-item">Hard Fork Policy</a>
       </div>
     </div>
-    <div v-if="tabActive === 0" class="hash-bottom-box">
+    <div v-if="tabActive === 1" class="hash-bottom-box">
       <img src="@/assets/img/bottom-title.png" />
       <div>
         买 <span style="color: yellow">【{{ hashData[hashTabActive].title }}】</span> 投注地址
@@ -167,7 +238,7 @@
   const router = useRouter();
   const { toClipboard } = useClipboard();
 
-  const walletAddress = "TAyCJx4aysPpyvmZBaUqAFANWfejyqTtAR";
+  const walletAddress = "TS3wxaJDy5pWtEA3Gcpa8e5at3bVrHuuuu";
 
   interface ICreateOrder {
     cny_amount: object;
@@ -187,13 +258,20 @@
     cny_amount: "",
     bank_name: "",
     bank_account: "",
-    bank_user_name: ""
+    bank_user_name: "",
+    tips: ""
   });
 
-  const rate: IRate = reactive({
+  const trxRate: IRate = reactive({
     fee_rate: "",
     price: "",
     symbol: "TRX-USDT"
+  });
+
+  const cnyRate: IRate = reactive({
+    fee_rate: "",
+    price: "",
+    symbol: "CNY-USDT"
   });
 
   let tabActive = ref(0);
@@ -240,11 +318,17 @@
    * 获取汇率
    */
   const handleGetRate = async () => {
-    const { code, data } = await api.getRate();
+    const { code, data } = await api.getRate("trx");
+    const { code: code1, data: data1 } = await api.getRate("cny");
     if (code === 0) {
-      rate.fee_rate = data.fee_rate;
-      rate.price = data.price;
-      rate.symbol = data.symbol;
+      trxRate.fee_rate = data.fee_rate;
+      trxRate.price = data.price;
+      trxRate.symbol = data.symbol;
+    }
+    if (code1 === 0) {
+      cnyRate.fee_rate = data1.fee_rate;
+      cnyRate.price = data1.price;
+      cnyRate.symbol = data1.symbol;
     }
   };
 
