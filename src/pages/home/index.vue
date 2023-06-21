@@ -272,17 +272,17 @@ onMounted(() => {
  * 获取汇率
  */
 const handleGetRate = async () => {
-  const { code, data } = await api.getRate("trx");
-  const { code: code1, data: data1 } = await api.getRate("cny");
-  if (code === 0) {
-    trxRate.fee_rate = data.fee_rate;
-    trxRate.price = data.price;
-    trxRate.symbol = data.symbol;
+  const res = await api.getRate("trx");
+  const res1 = await api.getRate("cny");
+  if (res && res.code === 0) {
+    trxRate.fee_rate = res.data.fee_rate;
+    trxRate.price = res.data.price;
+    trxRate.symbol = res.data.symbol;
   }
-  if (code1 === 0) {
-    cnyRate.fee_rate = data1.fee_rate;
-    cnyRate.price = data1.price;
-    cnyRate.symbol = data1.symbol;
+  if (res1 && res1.code === 0) {
+    cnyRate.fee_rate = res1.data.fee_rate;
+    cnyRate.price = res1.data.price;
+    cnyRate.symbol = res1.data.symbol;
   }
 };
 
