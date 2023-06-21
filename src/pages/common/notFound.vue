@@ -4,12 +4,12 @@
   </div>
 </template>
 <script setup lang="ts">
-  import { Empty } from "vant";
-  import notFoundImg from "@/assets/img/404.png";
+import { Empty } from "vant";
+import notFoundImg from "@/assets/img/404.png";
 </script>
 
 <style lang="scss" scoped>
-  .notfound-container {
-    height: 100%;
-  }
+.notfound-container {
+  height: 100%;
+}
 </style>

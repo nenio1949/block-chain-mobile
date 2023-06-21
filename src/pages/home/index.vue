@@ -71,54 +71,8 @@
             </Tab>
           </Tabs>
         </Tab>
-        <!-- <Tab title="USDT换RMB">
-          <Form @submit="handleSubmit" validate-trigger="onSubmit" class="home-form">
-            <CellGroup inset>
-              <Field
-                v-model="dataForm.cny_amount"
-                name="cny_amount"
-                label="兑换金额"
-                placeholder="请输入兑换金额"
-                :rules="[{ required: true, message: '请填写兑换金额' }]"
-              />
-              <Field
-                v-model="dataForm.bank_name"
-                name="bank_name"
-                label="收款渠道"
-                placeholder="支付宝/微信/银行名字"
-                :rules="[{ required: true, message: '请填写收款银行' }]"
-              />
-              <Field
-                v-model="dataForm.bank_account"
-                name="bank_account"
-                label="收款账户"
-                placeholder="请输入银行账户"
-                :rules="[{ required: true, message: '请填写银行账户' }]"
-              />
-              <Field
-                v-model="dataForm.bank_user_name"
-                name="bank_user_name"
-                label="收款人姓名"
-                placeholder="请输入收款人姓名"
-                :rules="[{ required: true, message: '请填写收款人' }]"
-              />
-            </CellGroup>
-            <div class="form-submit-box">
-              <Button size="small" block type="primary" native-type="submit"> 提交 </Button>
-            </div>
-          </Form>
-        </Tab> -->
         <Tab title="USDT换RMB">
           <div class="rate-box">
-            <!-- <div class="rate-item">
-              1 USDT<img src="@/assets/svg/usdterc20_01c09cad36.svg" />可兑换
-              <span class="rate-number">{{
-                cnyRate.symbol === "CNY-USDT"
-                  ? (1 / Number(cnyRate.price)).toFixed(2)
-                  : Number(cnyRate.price).toFixed(2)
-              }}</span>
-              RMB<img src="@/assets/svg/cny.svg" />
-            </div> -->
             <div class="rate-item">
               1 RMB<img src="@/assets/svg/cny.svg" />可兑换
               <span class="rate-number">{{
@@ -224,412 +178,412 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted, reactive, ref } from "vue";
-  import { Tab, Tabs, Form, Field, CellGroup, Button, List, showToast, Icon } from "vant";
-  import imTokenImg from "@/assets/img/tutorial/imtoken_t.jpg";
-  import ownbitImg from "@/assets/img/tutorial/ownbit_t.jpg";
-  import trustImg from "@/assets/img/tutorial/trustwallet_t.jpg";
-  import tronlinkImg from "@/assets/img/tutorial/tronlink_t.jpg";
-  import bitpleImg from "@/assets/img/tutorial/bitpie_t.jpg";
-  import { useRouter } from "vue-router"; // 传递参数用 useRouter
-  import useClipboard from "vue-clipboard3";
-  import hashData from "./hashData";
-  import api from "@/request/api";
-  const router = useRouter();
-  const { toClipboard } = useClipboard();
+import { onMounted, reactive, ref } from "vue";
+import { Tab, Tabs, Form, Field, CellGroup, Button, List, showToast, Icon } from "vant";
+import imTokenImg from "@/assets/img/tutorial/imtoken_t.jpg";
+import ownbitImg from "@/assets/img/tutorial/ownbit_t.jpg";
+import trustImg from "@/assets/img/tutorial/trustwallet_t.jpg";
+import tronlinkImg from "@/assets/img/tutorial/tronlink_t.jpg";
+import bitpleImg from "@/assets/img/tutorial/bitpie_t.jpg";
+import { useRouter } from "vue-router"; // 传递参数用 useRouter
+import useClipboard from "vue-clipboard3";
+import hashData from "./hashData";
+import api from "@/request/api";
+const router = useRouter();
+const { toClipboard } = useClipboard();
 
-  const walletAddress = "TS3wxaJDy5pWtEA3Gcpa8e5at3bVrHuuuu";
+const walletAddress = "TS3wxaJDy5pWtEA3Gcpa8e5at3bVrHuuuu";
 
-  interface ICreateOrder {
-    cny_amount: object;
-    bank_name: string;
-    bank_account: string;
-    bank_user_name: string;
+interface ICreateOrder {
+  cny_amount: object;
+  bank_name: string;
+  bank_account: string;
+  bank_user_name: string;
+}
+
+interface IRate {
+  fee_rate: string;
+  price: string;
+  symbol: string;
+}
+
+// form表单
+const dataForm = reactive({
+  cny_amount: "",
+  bank_name: "",
+  bank_account: "",
+  bank_user_name: "",
+  tips: ""
+});
+
+const trxRate: IRate = reactive({
+  fee_rate: "",
+  price: "",
+  symbol: "TRX-USDT"
+});
+
+const cnyRate: IRate = reactive({
+  fee_rate: "",
+  price: "",
+  symbol: "CNY-USDT"
+});
+
+let tabActive = ref(0);
+let hashTabActive = ref(0);
+
+// 平台
+const platForms = [
+  {
+    name: "imToken",
+    url: "https://token.im/",
+    img: imTokenImg
+  },
+  {
+    name: "ownbit",
+    url: "https://ownbit.io/",
+    img: ownbitImg
+  },
+  {
+    name: "Trust Wallet",
+    url: "https://trustwallet.com/",
+    img: trustImg
+  },
+  {
+    name: "TronLink",
+    url: "https://tronlink.org/",
+    img: tronlinkImg
+  },
+  {
+    name: "Bitple Wallet",
+    url: "https://bitpie.com/",
+    img: bitpleImg
   }
+];
 
-  interface IRate {
-    fee_rate: string;
-    price: string;
-    symbol: string;
+onMounted(() => {
+  const tabIndex = router.currentRoute.value?.query?.tabIndex;
+  if (tabIndex) {
+    tabActive.value = parseInt(tabIndex.toString());
   }
+  handleGetRate();
+});
 
-  // form表单
-  const dataForm = reactive({
-    cny_amount: "",
-    bank_name: "",
-    bank_account: "",
-    bank_user_name: "",
-    tips: ""
-  });
+/**
+ * 获取汇率
+ */
+const handleGetRate = async () => {
+  const { code, data } = await api.getRate("trx");
+  const { code: code1, data: data1 } = await api.getRate("cny");
+  if (code === 0) {
+    trxRate.fee_rate = data.fee_rate;
+    trxRate.price = data.price;
+    trxRate.symbol = data.symbol;
+  }
+  if (code1 === 0) {
+    cnyRate.fee_rate = data1.fee_rate;
+    cnyRate.price = data1.price;
+    cnyRate.symbol = data1.symbol;
+  }
+};
 
-  const trxRate: IRate = reactive({
-    fee_rate: "",
-    price: "",
-    symbol: "TRX-USDT"
-  });
-
-  const cnyRate: IRate = reactive({
-    fee_rate: "",
-    price: "",
-    symbol: "CNY-USDT"
-  });
-
-  let tabActive = ref(0);
-  let hashTabActive = ref(0);
-
-  // 平台
-  const platForms = [
-    {
-      name: "imToken",
-      url: "https://token.im/",
-      img: imTokenImg
-    },
-    {
-      name: "ownbit",
-      url: "https://ownbit.io/",
-      img: ownbitImg
-    },
-    {
-      name: "Trust Wallet",
-      url: "https://trustwallet.com/",
-      img: trustImg
-    },
-    {
-      name: "TronLink",
-      url: "https://tronlink.org/",
-      img: tronlinkImg
-    },
-    {
-      name: "Bitple Wallet",
-      url: "https://bitpie.com/",
-      img: bitpleImg
-    }
-  ];
-
-  onMounted(() => {
-    const tabIndex = router.currentRoute.value?.query?.tabIndex;
-    if (tabIndex) {
-      tabActive.value = parseInt(tabIndex.toString());
-    }
-    handleGetRate();
-  });
-
-  /**
-   * 获取汇率
-   */
-  const handleGetRate = async () => {
-    const { code, data } = await api.getRate("trx");
-    const { code: code1, data: data1 } = await api.getRate("cny");
-    if (code === 0) {
-      trxRate.fee_rate = data.fee_rate;
-      trxRate.price = data.price;
-      trxRate.symbol = data.symbol;
-    }
-    if (code1 === 0) {
-      cnyRate.fee_rate = data1.fee_rate;
-      cnyRate.price = data1.price;
-      cnyRate.symbol = data1.symbol;
-    }
-  };
-
-  /**
-   * 提交
-   * @param values
-   */
-  const handleSubmit = async (values: ICreateOrder) => {
-    const { code, data } = await api.createOrder(values);
-    if (code === 0) {
-      router.push({
-        path: "/order",
-        query: { order_no: data.order_no }
-      });
-    }
-  };
-
-  /**
-   * 复制钱包地址
-   */
-  const handleCopy = async () => {
-    await toClipboard(walletAddress).then(() => {
-      showToast("复制成功");
-    });
-  };
-
-  /**
-   * 复制hash key
-   */
-  const handleCopyHash = async (key: string) => {
-    await toClipboard(key).then(() => {
-      showToast("复制成功");
-    });
-  };
-
-  /**
-   * 切换tab
-   * @param index 序号
-   */
-  const handleTabChange = (index: number) => {
-    tabActive.value = index;
-  };
-
-  /**
-   * 切换hash tab
-   * @param index 序号
-   */
-  const handleHashTabChange = (index: number) => {
-    hashTabActive.value = index;
-  };
-
-  /** 查看教程 */
-  const handleViewTutorial = (img: string) => {
+/**
+ * 提交
+ * @param values
+ */
+const handleSubmit = async (values: ICreateOrder) => {
+  const { code, data } = await api.createOrder(values);
+  if (code === 0) {
     router.push({
-      path: "/tutorial",
-      query: { img: img }
+      path: "/order",
+      query: { order_no: data.order_no }
     });
-  };
+  }
+};
+
+/**
+ * 复制钱包地址
+ */
+const handleCopy = async () => {
+  await toClipboard(walletAddress).then(() => {
+    showToast("复制成功");
+  });
+};
+
+/**
+ * 复制hash key
+ */
+const handleCopyHash = async (key: string) => {
+  await toClipboard(key).then(() => {
+    showToast("复制成功");
+  });
+};
+
+/**
+ * 切换tab
+ * @param index 序号
+ */
+const handleTabChange = (index: number) => {
+  tabActive.value = index;
+};
+
+/**
+ * 切换hash tab
+ * @param index 序号
+ */
+const handleHashTabChange = (index: number) => {
+  hashTabActive.value = index;
+};
+
+/** 查看教程 */
+const handleViewTutorial = (img: string) => {
+  router.push({
+    path: "/tutorial",
+    query: { img: img }
+  });
+};
 </script>
 
 <style lang="scss" scoped>
-  :deep(.van-tab--card.van-tab--active) {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-  }
+:deep(.van-tab--card.van-tab--active) {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
 
-  :deep(.van-tab--card) {
-    color: rgba(238, 238, 238, 1) !important;
-  }
+:deep(.van-tab--card) {
+  color: rgba(238, 238, 238, 1) !important;
+}
 
-  :deep(.van-tab__text--ellipsis) {
-    color: rgba(238, 238, 238, 1) !important;
-  }
+:deep(.van-tab__text--ellipsis) {
+  color: rgba(238, 238, 238, 1) !important;
+}
 
-  :deep(.van-cell) {
-    background: rgba(52, 52, 67, 1);
-    color: rgba(255, 255, 255, 1);
-  }
+:deep(.van-cell) {
+  background: rgba(52, 52, 67, 1);
+  color: rgba(255, 255, 255, 1);
+}
 
-  :deep(.van-field__label) {
-    color: rgba(255, 255, 255, 1);
-  }
+:deep(.van-field__label) {
+  color: rgba(255, 255, 255, 1);
+}
 
-  :deep(.van-field__control) {
-    color: rgba(255, 255, 255, 1);
-  }
+:deep(.van-field__control) {
+  color: rgba(255, 255, 255, 1);
+}
 
-  :deep(.van-cell:after) {
-    border: none;
-  }
+:deep(.van-cell:after) {
+  border: none;
+}
 
-  :deep(.van-tab__panel) {
-    margin: 0 auto;
-    max-width: 800px;
-  }
+:deep(.van-tab__panel) {
+  margin: 0 auto;
+  max-width: 800px;
+}
 
-  :deep(input:-internal-autofill-previewe)d,
-  input:-internal-autofill-selected {
-    -webkit-text-fill-color: #807c7c;
-    transition: background-color 5000s ease-out 0.5s;
-  }
+:deep(input:-internal-autofill-previewe)d,
+input:-internal-autofill-selected {
+  -webkit-text-fill-color: #807c7c;
+  transition: background-color 5000s ease-out 0.5s;
+}
 
-  .home-container {
+.home-container {
+  background-color: rgba(43, 43, 55, 1);
+  color: rgba(255, 255, 255, 1);
+  min-height: 100%;
+}
+.header-box {
+  width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  background-color: rgba(43, 43, 55, 1);
+  padding: 1rem;
+  text-align: left;
+
+  img {
+    width: 50%;
+    max-width: 200px;
     background-color: rgba(43, 43, 55, 1);
-    color: rgba(255, 255, 255, 1);
-    min-height: 100%;
   }
-  .header-box {
-    width: 100%;
-    overflow: hidden;
+}
+
+.rate-box {
+  padding: 1rem;
+
+  .rate-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .rate-desc {
+    font-size: 0.5rem;
+    margin-top: 1rem;
+    text-align: right;
+  }
+
+  .rate-number {
+    font-size: 2rem;
+    margin: 0.5rem;
+    font-weight: bold;
+  }
+}
+
+.tab-box {
+  padding: 1rem 0 0;
+}
+
+.form-submit-box {
+  padding: 2rem;
+}
+
+.introduction-box {
+  text-align: left;
+  line-height: 2rem;
+  border-radius: 0.5rem;
+  margin: 0.5rem;
+  padding: 0.5rem;
+  background-color: rgba(52, 52, 67, 1);
+
+  ul {
+    padding-left: 1.5rem;
     box-sizing: border-box;
-    background-color: rgba(43, 43, 55, 1);
-    padding: 1rem;
-    text-align: left;
-
-    img {
-      width: 50%;
-      max-width: 200px;
-      background-color: rgba(43, 43, 55, 1);
-    }
   }
 
-  .rate-box {
-    padding: 1rem;
-
-    .rate-item {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .rate-desc {
-      font-size: 0.5rem;
-      margin-top: 1rem;
-      text-align: right;
-    }
-
-    .rate-number {
-      font-size: 2rem;
-      margin: 0.5rem;
-      font-weight: bold;
-    }
-  }
-
-  .tab-box {
-    padding: 1rem 0 0;
-  }
-
-  .form-submit-box {
-    padding: 2rem;
-  }
-
-  .introduction-box {
-    text-align: left;
-    line-height: 2rem;
-    border-radius: 0.5rem;
-    margin: 0.5rem;
-    padding: 0.5rem;
-    background-color: rgba(52, 52, 67, 1);
-
-    ul {
-      padding-left: 1.5rem;
-      box-sizing: border-box;
-    }
-
-    ul li {
-      font-size: 0.8rem;
-      display: list-item;
-      list-style-type: circle;
-
-      h5 {
-        padding: 1rem 1rem 0 1rem;
-        margin: 0;
-      }
-    }
-
-    ul li::marker {
-      color: rgba(25, 137, 250, 1);
-    }
-  }
-
-  .hash-rule-item {
-    list-style-type: none !important;
-    background-color: rgba(36, 36, 57, 1);
-    border-radius: 0.5rem;
-    margin-bottom: 1rem;
-  }
-
-  .hash-item {
-    background-color: rgba(52, 52, 67, 1);
-  }
-
-  .rule-box {
-    text-align: left;
+  ul li {
     font-size: 0.8rem;
-    line-height: 2rem;
-    margin: 0.5rem;
-    border-radius: 0.5rem;
-    padding: 0.5rem;
-    background-color: rgba(52, 52, 67, 1);
-  }
+    display: list-item;
+    list-style-type: circle;
 
-  .platform-box {
-    margin: 0.5rem 0.5rem 0;
-    padding: 0.5rem;
-    background-color: rgba(52, 52, 67, 1);
-    .platform-title {
-      display: flex;
-      width: 100%;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 1.2rem;
-      line-height: 3rem;
-      font-weight: bold;
-    }
-
-    .platform-item {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-
-      .platform-link {
-        color: #8b86af;
-      }
-
-      .tutorial-btn {
-        color: rgba(25, 137, 250, 1);
-        cursor: pointer;
-      }
-    }
-  }
-
-  .home-form {
-    padding-top: 1rem;
-  }
-
-  .customer-service {
-    position: fixed;
-    bottom: 7rem;
-    right: 1rem;
-  }
-
-  .footer-box {
-    margin: 0.5rem;
-    padding: 0.5rem;
-    text-align: center;
-
-    .footer-copyright {
-      font-size: 0.8rem;
-      line-height: 1rem;
-    }
-
-    .footer-item {
+    h5 {
+      padding: 1rem 1rem 0 1rem;
       margin: 0;
-      display: inline-block;
-      font-size: 0.8rem;
-      line-height: 1rem;
-      padding: 2px 8px;
-      border-right: 1px solid #3d3d4b;
+    }
+  }
+
+  ul li::marker {
+    color: rgba(25, 137, 250, 1);
+  }
+}
+
+.hash-rule-item {
+  list-style-type: none !important;
+  background-color: rgba(36, 36, 57, 1);
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.hash-item {
+  background-color: rgba(52, 52, 67, 1);
+}
+
+.rule-box {
+  text-align: left;
+  font-size: 0.8rem;
+  line-height: 2rem;
+  margin: 0.5rem;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  background-color: rgba(52, 52, 67, 1);
+}
+
+.platform-box {
+  margin: 0.5rem 0.5rem 0;
+  padding: 0.5rem;
+  background-color: rgba(52, 52, 67, 1);
+  .platform-title {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.2rem;
+    line-height: 3rem;
+    font-weight: bold;
+  }
+
+  .platform-item {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .platform-link {
       color: #8b86af;
     }
 
-    .footer-item:last-child {
-      border: none;
+    .tutorial-btn {
+      color: rgba(25, 137, 250, 1);
+      cursor: pointer;
     }
   }
+}
 
-  .hash-bottom-box {
-    padding: 1rem;
-    position: fixed;
-    bottom: 0;
-    background-color: rgba(25, 137, 250, 1);
-    width: 100%;
-    box-sizing: border-box;
+.home-form {
+  padding-top: 1rem;
+}
+
+.customer-service {
+  position: fixed;
+  bottom: 7rem;
+  right: 1rem;
+}
+
+.footer-box {
+  margin: 0.5rem;
+  padding: 0.5rem;
+  text-align: center;
+
+  .footer-copyright {
     font-size: 0.8rem;
-    border-top-right-radius: 25px;
-    border-top-left-radius: 25px;
+    line-height: 1rem;
+  }
 
-    img {
-      width: 60%;
-      max-width: 500px;
+  .footer-item {
+    margin: 0;
+    display: inline-block;
+    font-size: 0.8rem;
+    line-height: 1rem;
+    padding: 2px 8px;
+    border-right: 1px solid #3d3d4b;
+    color: #8b86af;
+  }
+
+  .footer-item:last-child {
+    border: none;
+  }
+}
+
+.hash-bottom-box {
+  padding: 1rem;
+  position: fixed;
+  bottom: 0;
+  background-color: rgba(25, 137, 250, 1);
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 0.8rem;
+  border-top-right-radius: 25px;
+  border-top-left-radius: 25px;
+
+  img {
+    width: 60%;
+    max-width: 500px;
+  }
+
+  .hash-bottom-key-box {
+    display: flex;
+    flex-flow: wrap;
+    justify-content: center;
+    align-items: center;
+    padding-left: 0.5rem;
+    .hash-bottom-key-item {
+      background-color: rgba(255, 255, 255, 1);
+      color: rgba(25, 137, 250, 1);
+      margin-bottom: 1rem;
+      margin-right: 0.5rem;
+      border-radius: 1rem;
+      padding: 0.2rem 0.5rem;
     }
 
-    .hash-bottom-key-box {
-      display: flex;
-      flex-flow: wrap;
-      justify-content: center;
-      align-items: center;
-      padding-left: 0.5rem;
-      .hash-bottom-key-item {
-        background-color: rgba(255, 255, 255, 1);
-        color: rgba(25, 137, 250, 1);
-        margin-bottom: 1rem;
-        margin-right: 0.5rem;
-        border-radius: 1rem;
-        padding: 0.2rem 0.5rem;
-      }
-
-      .hash-bottom-key-item:last-child {
-        cursor: pointer;
-      }
+    .hash-bottom-key-item:last-child {
+      cursor: pointer;
     }
   }
+}
 </style>

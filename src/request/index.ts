@@ -7,11 +7,6 @@ interface Response {
   message: string;
 }
 
-// declare module "axios" {
-//   interface AxiosResponse {
-//     (config: AxiosRequestConfig): Promise<Response>;
-//   }
-// }
 declare module "axios" {
   interface AxiosResponse<T = any> {
     code: 0;
